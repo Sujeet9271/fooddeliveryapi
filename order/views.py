@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import OrderSerializer,UserOrderSerializer
+from .serializers import OrderSerializer,UserOrderSerializer,NestedOrderSerializer,NestedUserOrderSerializer
 
 from .models import Order,UserOrder
 
@@ -18,11 +18,10 @@ def cart(request):
         items = UserOrder.objects.filter(customer=request.user.id).exclude(placed=True)
         for item in items:
             total += item.price
-        serializer = UserOrderSerializer(items,many=True)
+        serializer = NestedUserOrderSerializer(items,many=True)
         return Response({'orders':serializer.data,'total_price':total})
 
     if request.method == 'PATCH':
-        print(request.data)
         for data in request.data:
             id = data['id']
             item = UserOrder.objects.get(id = id)
@@ -55,42 +54,44 @@ def cart(request):
 @api_view(['GET','POST'])
 def create_cart(request,city,restaurant):
     if request.method == 'GET':
-        print(request.user.id)
+        print(request.user.is_authenticated)
         qs=Category.objects.select_related('restaurant').filter(restaurant__city=city,restaurant=restaurant)
         serializer=NestedCategorySerializer(qs, many=True)
         return Response(serializer.data)
-    else:  
-        orders=request.data
-        for order in orders:
-            order_id = order['id']
-            order_quantity = order['quantity']
-            menu = Menu.objects.get(id=order_id)
-            total_price = order_quantity*menu.price
+    else:
+        if request.user.is_authenticated:
+            orders=request.data
+            for order in orders:
+                order_id = order['id']
+                order_quantity = order['quantity']
+                menu = Menu.objects.get(id=order_id)
+                total_price = order_quantity*menu.price
 
-            user_order = {
-                'customer':1,
-                'restaurant':restaurant,
-                'itemname':order_id,
-                'quantity':order_quantity,
-                'price':total_price,
-                'placed':False
-            }
-            serializer = UserOrderSerializer(data=user_order)
+                user_order = {
+                    'customer':request.user.id,
+                    'restaurant':menu.restaurant.id,
+                    'item':order_id,
+                    'quantity':order_quantity,
+                    'price':total_price,
+                    'placed':False
+                }
+                serializer = UserOrderSerializer(data=user_order)
 
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                return Response(serializer.errors)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors)
 
-            
-        orders = UserOrder.objects.filter(restaurant=restaurant).exclude(placed=True)
-        serializer = UserOrderSerializer(orders, many=True)
-        return Response(serializer.data)
+                
+            orders = UserOrder.objects.filter(restaurant=restaurant).exclude(placed=True)
+            serializer = UserOrderSerializer(orders, many=True)
+            return Response(serializer.data)
+        return Response("can't add into cart. Login First")
 
 
 
 @api_view(['GET'])
-def create_order(request):
+def place_order(request):
     cart = UserOrder.objects.filter(customer = request.user.id).exclude(placed=True)
     serializer = UserOrderSerializer(many=True)
     for order in cart:
@@ -101,20 +102,29 @@ def create_order(request):
             'quantity':order.quantity,
             'price':order.price
         }
-        print(staff)
+        
         
         orderserializer = OrderSerializer(data=staff)
         if orderserializer.is_valid():
             orderserializer.save()
         else:
             return Response(orderserializer.errors)
-    
-    orders = Order.objects.filter(userorder__customer = request.user.id)
-    ordersserializer = OrderSerializer(orders,many=True)
-
+ 
     cart = UserOrder.objects.all().update(placed=True)   
 
-    return Response(ordersserializer.data)
+    return Response('Order Placed')
+
+@api_view(['GET'])
+def myorders(request):
+    
+    qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)
+    serializer = NestedOrderSerializer(qs, many=True)
+
+    total_price = 0
+    for order in qs:
+        total_price += order.price
+    
+    return Response({'orders':serializer.data,'total price':total_price})
     
 
 @api_view(['GET'])

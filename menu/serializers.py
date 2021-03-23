@@ -10,11 +10,20 @@ class CategorySerializer(serializers.ModelSerializer):
     # def validators(self,object):
     #     if object.category in ['']
 
+    def validate(self, attrs):
+        instance = Category(**attrs)
+        instance.clean()
+        return attrs
 
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model=Sub_Category
         fields=['id','sub_category','category']
+
+    def validate(self, attrs):
+        instance = Sub_Category(**attrs)
+        instance.clean()
+        return attrs
 
 class MenuSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,6 +31,7 @@ class MenuSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 class NestedSubCategorySerializer(serializers.ModelSerializer):
+    
     menu=MenuSerializer(many=True,read_only=True)
 
     class Meta:
@@ -30,6 +40,7 @@ class NestedSubCategorySerializer(serializers.ModelSerializer):
      
 
 class NestedCategorySerializer(serializers.ModelSerializer):
+
     sub_category=NestedSubCategorySerializer(many=True,read_only=True)
 
     class Meta:

@@ -4,9 +4,9 @@ from .models import Order,UserOrder
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display=('id','restaurant','userorder','created', 'updated','status')
+    list_display=('id','restaurant','user_order','created', 'updated','status')
 
 
 @admin.register(UserOrder)
 class UserOrderAdmin(admin.ModelAdmin):
-    list_display=('id','customer','restaurant','itemname','quantity')
+    list_display=('id','customer','restaurant','item','quantity','created','updated','placed')

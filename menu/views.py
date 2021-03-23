@@ -12,7 +12,6 @@ from order.serializers import OrderSerializer,UserOrderSerializer
 def detail_menu(request,city,restaurant):
     if request.user.is_staff:
         if request.method == 'GET':
-            print(request.user.id)
             qs=Category.objects.select_related('restaurant').filter(restaurant__city=city,restaurant=restaurant)
             serializer=NestedCategorySerializer(qs, many=True)
             return Response(serializer.data)
@@ -85,53 +84,7 @@ def sub_category(city,restaurant,category):
 def item(city,restaurant,category,subcategory):
     return Menu.objects.select_related('sub_category').filter(restaurant__city=city,restaurant=restaurant,category=category,sub_category=subcategory)
 
-@api_view(['GET','POST'])
-def add_menu(request,city,restaurant,category,subcategory):
-    if request.user.is_staff:
-        if request.method == 'GET':
-            qs=Menu.objects.filter(sub_category=subcategory,category__restaurant=restaurant,category__restaurant__city=city)
-            serializer=MenuSerializer(qs, many=True)
-            return Response(serializer.data)
-        elif request.method=='POST':
-            serializer = MenuSerializer(data=request.data)
-            request.data['restaurant']=restaurant
-            request.data['category']=category
-            request.data['sub_category']=subcategory
 
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    return Response('ACCESS DENIED',status=status.HTTP_403_FORBIDDEN)
-
-@api_view(['GET','PUT','PATCH','DELETE'])
-def update_item(request,city,restaurant,category,subcategory,item):
-    if request.user.is_staff:
-        try:
-            item = Menu.objects.get(sub_category=subcategory,id=item)   
-            serializer = MenuSerializer(item)
-            if request.method == 'PATCH':
-                serializer = MenuSerializer(instance = item, data=request.data, partial=True)
-                # request.data['user']=request.user.id
-                # request.data['user']=request.user.id
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data)
-                return Response(serializer.errors,status=HTTP_400_BAD_REQUEST)
-            elif request.method=='PUT':
-                serializer = MenuSerializer(instance = item, data=request.data)
-                # request.data['user']=request.user.id
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data)
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
-            elif request.method == 'DELETE':
-                item.delete()
-                return Response('Item Deleted')
-            return Response(serializer.data)
-        except Menu.DoesNotExist:
-            return Response('Item Not Found',status=status.HTTP_404_NOT_FOUND)
-    return Response('ACCESS DENIED',status=status.HTTP_403_FORBIDDEN)
 
 
 
@@ -184,10 +137,11 @@ def subcategory(request,city,restaurant,category):
         if request.method == 'GET':
             qs=Sub_Category.objects.filter(category__restaurant__city=city,category__restaurant=restaurant,category=category)
             serializer=SubCategorySerializer(qs,many=True)
-            return Response(serializer.data)    
-        serializer = SubCategorySerializer(data=request.data)
-        if request.data['category']:
-            request.data['category']=category
+            return Response(serializer.data)
+
+        serializer = SubCategorySerializer(data=request.data,many=True)
+        for subcategory in request.data:
+            subcategory['category']=category
         
         if serializer.is_valid():
             serializer.save()
@@ -220,4 +174,53 @@ def update_subcategory(request,city,restaurant,category,subcategory):
                 return Response(serializer.data)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def add_menu(request,city,restaurant,category,subcategory):
+    if request.user.is_staff:
+        if request.method == 'GET':
+            qs=Menu.objects.filter(sub_category=subcategory,category__restaurant=restaurant,category__restaurant__city=city)
+            serializer=MenuSerializer(qs, many=True)
+            return Response(serializer.data)
+        elif request.method=='POST':
+            serializer = MenuSerializer(data=request.data,many=True)
+            for item in request.data:
+                item['restaurant']=restaurant
+                item['category']=category
+                item['sub_category']=subcategory
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    return Response('ACCESS DENIED',status=status.HTTP_403_FORBIDDEN)
+
+@api_view(['GET','PUT','PATCH','DELETE'])
+def update_item(request,city,restaurant,category,subcategory,item):
+    if request.user.is_staff:
+        try:
+            item = Menu.objects.get(sub_category=subcategory,id=item)   
+            serializer = MenuSerializer(item)
+            if request.method == 'PATCH':
+                serializer = MenuSerializer(instance = item, data=request.data, partial=True)
+                # request.data['user']=request.user.id
+                # request.data['user']=request.user.id
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors,status=HTTP_400_BAD_REQUEST)
+            elif request.method=='PUT':
+                serializer = MenuSerializer(instance = item, data=request.data)
+                # request.data['user']=request.user.id
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+            elif request.method == 'DELETE':
+                item.delete()
+                return Response('Item Deleted')
+            return Response(serializer.data)
+        except Menu.DoesNotExist:
+            return Response('Item Not Found',status=status.HTTP_404_NOT_FOUND)
+    return Response('ACCESS DENIED',status=status.HTTP_403_FORBIDDEN)
     

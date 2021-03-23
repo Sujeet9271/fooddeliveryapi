@@ -50,7 +50,9 @@ urlpatterns = [
 
     path('cart/', order.cart, name='cart'),
 
-    path('cart/create_order/', order.create_order, name = 'create order'),
+    path('cart/place_order/', order.place_order, name = 'place order'),
+
+    path('myorders/', order.myorders, name='My Orders'),
 
     # For Viewing the Available Cities
     path('cities/',city.city,name='city'),

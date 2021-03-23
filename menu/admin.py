@@ -3,7 +3,7 @@ from .models import Category,Menu,Sub_Category
 # Register your models here.
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display=['id','category']
+    list_display=['id','category','restaurant']
 
 @admin.register(Sub_Category)
 class SubCategoryAdmin(admin.ModelAdmin):
@@ -11,4 +11,4 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display=['id','itemname','sub_category','price','quantity'] 
+    list_display=['id','itemname','sub_category','price','description'] 
