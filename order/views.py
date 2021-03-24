@@ -1,8 +1,9 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import OrderSerializer,UserOrderSerializer,NestedOrderSerializer,NestedUserOrderSerializer
+from rest_framework.permissions import IsAuthenticated
+from .serializers import OrderSerializer,UserOrderSerializer,NestedOrderSerializer,NestedUserOrderSerializer,ResOrderSerializer
 
 from .models import Order,UserOrder
 
@@ -11,7 +12,10 @@ from menu.models import Category,Sub_Category,Menu
 from menu.serializers import NestedCategorySerializer
 from datetime import date
 
+
+
 @api_view(['GET','PATCH'])
+@permission_classes([IsAuthenticated])
 def cart(request):
     if request.method == 'GET':
         total = 0
@@ -52,6 +56,7 @@ def cart(request):
 
 
 @api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def create_cart(request,city,restaurant):
     if request.method == 'GET':
         print(request.user.is_authenticated)
@@ -75,6 +80,7 @@ def create_cart(request,city,restaurant):
                     'price':total_price,
                     'placed':False
                 }
+                print(user_order)
                 serializer = UserOrderSerializer(data=user_order)
 
                 if serializer.is_valid():
@@ -90,7 +96,9 @@ def create_cart(request,city,restaurant):
 
 
 
+
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def place_order(request):
     cart = UserOrder.objects.filter(customer = request.user.id).exclude(placed=True)
     serializer = UserOrderSerializer(many=True)
@@ -98,7 +106,7 @@ def place_order(request):
         staff = {
             'restaurant':order.restaurant.id,
             'status':'Pending',
-            'userorder':order.id,
+            'user_order':order.id,
             'quantity':order.quantity,
             'price':order.price
         }
@@ -114,7 +122,9 @@ def place_order(request):
 
     return Response('Order Placed')
 
+
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def myorders(request):
     
     qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)
@@ -127,25 +137,30 @@ def myorders(request):
     return Response({'orders':serializer.data,'total price':total_price})
     
 
+
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def order_received(request,city,restaurant):
-    if request.user.is_staff == True:
+    if request.user.is_superuser or (request.user.is_staff and request.user.restaurant==restaurant):
         revenue=0
         total_order=0
         if request.method == 'GET':
-            qs = Order.objects.filter(userorder__restaurant__city=city,userorder__restaurant=restaurant)
+            print(request.user)
+            qs = Order.objects.filter(user_order__restaurant__city=city,user_order__restaurant=restaurant)
             # qs=Order.objects.filter(userorder__restaurant__city=city,userorder__restaurant=restaurant,created__year=date.today().year,created__month=date.today().month,created__day=date.today().day)
             for order in qs:
                 total_order += 1
-                revenue += order.userorder.price
-            serializer=OrderSerializer(qs, many=True)
+                revenue += order.user_order.price
+            serializer=ResOrderSerializer(qs, many=True)
             return Response({'total_orders':total_order,'revenue':revenue,'orders':serializer.data})
     return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)
 
 
+
 @api_view(['GET','PUT','PATCH'])
+@permission_classes([IsAuthenticated])
 def order_update(request,city,restaurant,id):
-    if request.user.is_staff==True:
+    if request.user.is_superuser or (request.user.is_staff and request.user.restaurant==restaurant):
         try:   
             order = Order.objects.get(userorder__restaurant__city=city,userorder__restaurant=restaurant,id=id)   
             serializer = OrderSerializer(order)

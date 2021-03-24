@@ -1,46 +1,28 @@
-"""Food__Delivery URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path,include
 
+from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView,TokenVerifyView
 
 from city import views as city
 from order import views as order
 from menu import views as menu
 from restaurant import views as restaurant
-
-
-# urlpatterns = [
-
-#             path('admin/',admin.site.urls),
-#             path('cities/',include('city.urls')),
-#             path('cities/<int:city>/', include('restaurant.urls')),
-#             path('cities/<int:city>/restaurant/<int:restaurant>/', include('menu.urls')),
-
-
-# ]
+from accounts import views as accounts
 
 
 urlpatterns = [
     
     path('admin/', admin.site.urls),
     path('',city.index),
+
+    
+    path('token/refresh/', TokenRefreshView.as_view(),name="token_refresh"),
+    path('token/verify/', TokenVerifyView.as_view(),name="token_verify"),
     # ---------------------------------------------------------------For Customers-----------------------------------------------------------------------
     
-    
+    path('accounts/login/', TokenObtainPairView.as_view(), name='login'),
+    path('accounts/register/', accounts.customer_register, name = 'customer'),
+    path('accounts/logout/', accounts._logout, name='logout'),
 
     #  Detail of Available Restaurants with their detail menu with category and sub category from the selected City
     path('detail/cities/',city.detail_city, name='detail_city'),
@@ -61,7 +43,7 @@ urlpatterns = [
     path('cities/<int:city>/', restaurant.restaurant, name='restaurants'),
 
     # for Viewing all the Available Veg only restaurants in the city
-    path('cities/<int:city>/restaurants/veg_only/', restaurant.veg_restaurant, name='veg restaurants'),
+    path('cities/<int:city>/restaurant/veg_only/', restaurant.veg_restaurant, name='veg restaurants'),
 
     # Detail view of Restaurant's Menu
     path('cities/<int:city>/restaurant/<int:restaurant>/', order.create_cart, name='create order'),
@@ -85,6 +67,8 @@ urlpatterns = [
     
     # -------------------------------------------------------------For Restaurants-----------------------------------------------------------------------
    
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/login/', TokenObtainPairView.as_view(), name='staff login'),    
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/register/', accounts.staff_register, name="staff register"),
     # for  viewing and updating orders from staff end 
 
     # For Restaurant's DashBoard

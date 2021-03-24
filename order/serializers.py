@@ -5,7 +5,7 @@ from menu.serializers import MenuSerializer
 class UserOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserOrder
-        fields = ['id','item','quantity','price','created','placed','customer']
+        fields = ['id','item','quantity','price','created','placed','customer','restaurant']
 
 class NestedUserOrderSerializer(serializers.ModelSerializer):
 
@@ -17,10 +17,17 @@ class NestedUserOrderSerializer(serializers.ModelSerializer):
         depth=1
 
 
+class ResOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id','user_order','quantity','price','created','updated','status']
+        depth = 1
+
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['id','restaurant','user_order','quantity','price','created','updated','status']
+        fields = ['id','user_order','restaurant','quantity','price','created','updated','status']
+        
 
 
 class NestedOrderSerializer(serializers.ModelSerializer):

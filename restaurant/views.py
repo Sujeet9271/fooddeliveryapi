@@ -1,4 +1,5 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -7,6 +8,7 @@ from .models import Restaurant
 # Create your views here.
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def restaurant(request,city):
     try:
         qs=Restaurant.objects.filter(city=city)
@@ -16,6 +18,7 @@ def restaurant(request,city):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def veg_restaurant(request,city):
     try:
         qs=Restaurant.objects.select_related('city').filter(veg_only=True)
@@ -25,6 +28,7 @@ def veg_restaurant(request,city):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def detailed_restaurant(request,city):
     try:
         qs=Restaurant.objects.filter(city=city)

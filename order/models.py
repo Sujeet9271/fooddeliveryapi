@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from accounts.models import User
 from city.models import City
 from restaurant.models import Restaurant
 from menu.models import Category,Menu

@@ -2,7 +2,8 @@ from django.shortcuts import render
 from rest_framework import status
 
 # Create your views here.
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import CitySerializer,NestedCitySerializer
@@ -10,6 +11,7 @@ from .models import City
 # Create your views here.
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def detail_city(request):
     try:
         qs=City.objects.all()
@@ -20,6 +22,7 @@ def detail_city(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def city(request):
     try:
         qs=City.objects.all()
