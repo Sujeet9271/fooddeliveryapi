@@ -22,7 +22,7 @@ urlpatterns = [
     
     path('accounts/login/', TokenObtainPairView.as_view(), name='login'),
     path('accounts/register/', accounts.customer_register, name = 'customer'),
-    path('accounts/logout/', accounts._logout, name='logout'),
+    path('accounts/logout/', accounts.BlacklistTokenView.as_view(), name='logout'),
 
     #  Detail of Available Restaurants with their detail menu with category and sub category from the selected City
     path('detail/cities/',city.detail_city, name='detail_city'),
