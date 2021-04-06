@@ -84,11 +84,18 @@ class BlacklistTokenView(APIView):
         try:
             refresh_token = request.data["refresh_token"]
             token = RefreshToken(refresh_token)
-            token.token_blacklist()
+            token.blacklist()
             return Response('Logged Out',status=status.HTTP_200_OK)
         except Exception as e:
             print(Exception)
             return Response('Exception',status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+def next(request):
+    if request.user.is_staff:
+        return Response('Welcome Customer')
+    else:
+        return Response('Welcome Staff')
 
 # @api_view(['GET'])
 # def _logout(request):

@@ -8,7 +8,8 @@ from order import views as order
 from menu import views as menu
 from restaurant import views as restaurant
 from accounts import views as accounts
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     
@@ -99,13 +100,4 @@ urlpatterns = [
     # Update or Delete Menu Item
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/item/<int:item>/', menu.update_item,name='subcategory_item_detail'),
 
-    
-
-    
-
-    
-
-    
-
-    
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

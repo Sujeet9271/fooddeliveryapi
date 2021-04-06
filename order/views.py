@@ -80,8 +80,8 @@ def create_cart(request,city,restaurant):
                     'price':total_price,
                     'placed':False
                 }
-                print(user_order)
-                serializer = UserOrderSerializer(data=user_order)
+                
+                serializer = NestedUserOrderSerializer(data=user_order,many=True)
 
                 if serializer.is_valid():
                     serializer.save()

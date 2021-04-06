@@ -31,6 +31,18 @@ def city(request):
     except City.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def search(request):
+    if request.method=='POST':
+        try:
+            city=request.data['city']
+            qs=City.objects.filter(name=city)
+            serializer=CitySerializer(qs,many=True)
+            return Response(serializer.data)
+        except City.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
 def index(request):
     context={
