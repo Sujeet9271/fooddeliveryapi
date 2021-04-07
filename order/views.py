@@ -12,12 +12,40 @@ from menu.models import Category,Sub_Category,Menu
 from menu.serializers import NestedCategorySerializer
 from datetime import date
 
-@api_view(['GET','DELETE'])
+
+
+
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
-def cart_delete(request,id):
-    item = UserOrder.objects.get(id=id)
-    item.delete()
-    return Response('item deleted',status=status.HTTP_404_NOT_FOUND)
+def create_cart(request,city,restaurant):
+    if request.method == 'GET':
+        qs=Category.objects.select_related('restaurant').filter(restaurant__city=city,restaurant=restaurant)
+        serializer=NestedCategorySerializer(qs, many=True)
+        return Response(serializer.data)
+    else:
+        orders=request.data
+        for order in orders:
+            order_id = order['id']
+            order_quantity = order['quantity']
+            menu = Menu.objects.get(id=order_id)
+            total_price = order_quantity*menu.price
+
+            user_order = {
+                'customer':request.user.id,
+                'restaurant':menu.restaurant.id,
+                'item':order_id,
+                'quantity':order_quantity,
+                'price':total_price,
+                'placed':False
+            }
+            serializer = UserOrderSerializer(data=user_order)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response('Added To Cart')
+            else:
+                return Response(serializer.errors)
+
 
 @api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
@@ -59,41 +87,12 @@ def cart(request):
         return Response({'orders':serializer.data,'total_price':total})
 
 
-
-@api_view(['GET','POST'])
+@api_view(['GET','DELETE'])
 @permission_classes([IsAuthenticated])
-def create_cart(request,city,restaurant):
-    if request.method == 'GET':
-        qs=Category.objects.select_related('restaurant').filter(restaurant__city=city,restaurant=restaurant)
-        serializer=NestedCategorySerializer(qs, many=True)
-        return Response(serializer.data)
-    else:
-        orders=request.data
-        print(orders)
-        for order in orders:
-            order_id = order['id']
-            order_quantity = order['quantity']
-            menu = Menu.objects.get(id=order_id)
-            total_price = order_quantity*menu.price
-
-            user_order = {
-                'customer':request.user.id,
-                'restaurant':menu.restaurant.id,
-                'item':order_id,
-                'quantity':order_quantity,
-                'price':total_price,
-                'placed':False
-            }
-            print(user_order)
-            serializer = UserOrderSerializer(data=user_order)
-
-            if serializer.is_valid():
-                serializer.save()
-                return Response('Added To Cart')
-            else:
-                return Response(serializer.errors)
-
-
+def cart_delete(request,id):
+    item = UserOrder.objects.get(id=id)
+    item.delete()
+    return Response('item deleted',status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -137,6 +136,10 @@ def myorders(request):
     
 
 
+
+
+# For Restaurant----------------------------------------------------------------------------------------------------------------------------------------------------
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def order_received(request,city,restaurant):
@@ -156,29 +159,29 @@ def order_received(request,city,restaurant):
 
 
 
-@api_view(['GET','PUT','PATCH'])
+@api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
 def order_update(request,city,restaurant,id):
     if request.user.is_superuser or (request.user.is_staff and request.user.restaurant==restaurant):
         try:   
-            order = Order.objects.get(userorder__restaurant__city=city,userorder__restaurant=restaurant,id=id)   
+            order = Order.objects.get(restaurant=restaurant,restaurant__city=city,id=id)   
             serializer = OrderSerializer(order)
             if request.method == 'PATCH':
                 serializer = OrderSerializer(instance = order, data=request.data, partial=True)
-                # request.data['user']=request.user.id
+                
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-            if request.method=='PUT':
-                serializer = OrderSerializer(instance = order, data=request.data)
-                # request.data['user']=request.user.id
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data)
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+            # if request.method=='PUT':
+            #     serializer = OrderSerializer(instance = order, data=request.data)
+            #     if serializer.is_valid():
+            #         serializer.save()
+            #         return Response(serializer.data)
+            #     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
             return Response(serializer.data) 
 
         except Order.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-    return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)
+    else:
+        return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)

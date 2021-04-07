@@ -33,6 +33,9 @@ class Sub_Category(models.Model):
         if self.category.restaurant.veg_only==True and self.sub_category.lower() in ['nonveg','non veg','non-veg']:
             raise ValidationError(f"{self.category.restaurant} cannot have Non-Vegetarian Items")
 
+def location(instance,filename):
+    return f"{instance.restaurant.city}/{instance.restaurant.name}/menu/{filename}"
+
 class Menu(models.Model):
     STATUS = (
         ('Unrated',('Unrated')),
@@ -48,6 +51,7 @@ class Menu(models.Model):
     price=models.IntegerField()
     description = models.TextField(null=True,blank=True)
     rating=models.CharField(max_length=50,choices=STATUS,null=True,default='Unrated')
+    image = models.ImageField(null=True,blank=True,upload_to=location)
 
     def __str__(self):
         return f"{self.itemname}({self.category.category}) from {self.restaurant}"
