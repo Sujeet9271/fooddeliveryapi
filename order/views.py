@@ -12,7 +12,12 @@ from menu.models import Category,Sub_Category,Menu
 from menu.serializers import NestedCategorySerializer
 from datetime import date
 
-
+@api_view(['GET','DELETE'])
+@permission_classes([IsAuthenticated])
+def cart_delete(request,id):
+    item = UserOrder.objects.get(id=id)
+    item.delete()
+    return Response('item deleted',status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
@@ -29,7 +34,7 @@ def cart(request):
         for data in request.data:
             id = data['id']
             item = UserOrder.objects.get(id = id)
-            id = item.itemname.id
+            id = item.item.id
             
             order = Menu.objects.get(id = id)
         
@@ -59,40 +64,35 @@ def cart(request):
 @permission_classes([IsAuthenticated])
 def create_cart(request,city,restaurant):
     if request.method == 'GET':
-        print(request.user.is_authenticated)
         qs=Category.objects.select_related('restaurant').filter(restaurant__city=city,restaurant=restaurant)
         serializer=NestedCategorySerializer(qs, many=True)
         return Response(serializer.data)
     else:
-        if request.user.is_authenticated:
-            orders=request.data
-            for order in orders:
-                order_id = order['id']
-                order_quantity = order['quantity']
-                menu = Menu.objects.get(id=order_id)
-                total_price = order_quantity*menu.price
+        orders=request.data
+        print(orders)
+        for order in orders:
+            order_id = order['id']
+            order_quantity = order['quantity']
+            menu = Menu.objects.get(id=order_id)
+            total_price = order_quantity*menu.price
 
-                user_order = {
-                    'customer':request.user.id,
-                    'restaurant':menu.restaurant.id,
-                    'item':order_id,
-                    'quantity':order_quantity,
-                    'price':total_price,
-                    'placed':False
-                }
-                
-                serializer = NestedUserOrderSerializer(data=user_order,many=True)
+            user_order = {
+                'customer':request.user.id,
+                'restaurant':menu.restaurant.id,
+                'item':order_id,
+                'quantity':order_quantity,
+                'price':total_price,
+                'placed':False
+            }
+            print(user_order)
+            serializer = UserOrderSerializer(data=user_order)
 
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    return Response(serializer.errors)
+            if serializer.is_valid():
+                serializer.save()
+                return Response('Added To Cart')
+            else:
+                return Response(serializer.errors)
 
-                
-            orders = UserOrder.objects.filter(restaurant=restaurant).exclude(placed=True)
-            serializer = UserOrderSerializer(orders, many=True)
-            return Response(serializer.data)
-        return Response("can't add into cart. Login First")
 
 
 
@@ -125,8 +125,7 @@ def place_order(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def myorders(request):
-    
+def myorders(request):    
     qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)
     serializer = NestedOrderSerializer(qs, many=True)
 

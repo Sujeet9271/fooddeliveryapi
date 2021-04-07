@@ -33,6 +33,8 @@ urlpatterns = [
 
     path('cart/', order.cart, name='cart'),
 
+    path('cart/<int:id>/', order.cart_delete, name='delete item'),
+
     path('cart/place_order/', order.place_order, name = 'place order'),
 
     path('myorders/', order.myorders, name='My Orders'),

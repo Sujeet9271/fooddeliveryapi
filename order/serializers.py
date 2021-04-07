@@ -14,14 +14,12 @@ class NestedUserOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserOrder
         fields = ['id','item','menu_item','quantity','price','created','placed','customer']
-        depth=1
 
 
 class ResOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id','user_order','quantity','price','created','updated','status']
-        depth = 1
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,6 +35,6 @@ class NestedOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id','user_order','created','updated','status']
-        depth=1
+
         
     
