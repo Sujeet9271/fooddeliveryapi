@@ -42,9 +42,9 @@ def create_cart(request,city,restaurant):
 
             if serializer.is_valid():
                 serializer.save()
-                return Response('Added To Cart')
             else:
                 return Response(serializer.errors)
+        return Response('Added To Cart')
 
 
 @api_view(['GET','PATCH'])
@@ -116,9 +116,8 @@ def place_order(request):
             orderserializer.save()
         else:
             return Response(orderserializer.errors)
- 
-    cart = UserOrder.objects.all().update(placed=True)   
 
+    cart = UserOrder.objects.filter(customer = request.user.id).update(placed=True) 
     return Response('Order Placed')
 
 
@@ -126,13 +125,14 @@ def place_order(request):
 @permission_classes([IsAuthenticated])
 def myorders(request):    
     qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)
+    
     serializer = NestedOrderSerializer(qs, many=True)
 
     total_price = 0
     for order in qs:
         total_price += order.price
     
-    return Response({'orders':serializer.data,'total price':total_price})
+    return Response({'orders':serializer.data,'total price':[total_price]})
     
 
 
@@ -147,14 +147,12 @@ def order_received(request,city,restaurant):
         revenue=0
         total_order=0
         if request.method == 'GET':
-            print(request.user)
-            qs = Order.objects.filter(user_order__restaurant__city=city,user_order__restaurant=restaurant)
-            # qs=Order.objects.filter(userorder__restaurant__city=city,userorder__restaurant=restaurant,created__year=date.today().year,created__month=date.today().month,created__day=date.today().day)
+            qs = Order.objects.filter(restaurant__city=city,restaurant=restaurant)
             for order in qs:
                 total_order += 1
                 revenue += order.user_order.price
             serializer=ResOrderSerializer(qs, many=True)
-            return Response({'total_orders':total_order,'revenue':revenue,'orders':serializer.data})
+            return Response({'total_orders':[total_order],'revenue':[revenue],'orders':serializer.data})
     return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)
 
 
