@@ -3,23 +3,26 @@ from .models import Order,UserOrder
 from menu.serializers import MenuSerializer
 
 class UserOrderSerializer(serializers.ModelSerializer):
+    itemname = serializers.ReadOnlyField()
     class Meta:
         model = UserOrder
-        fields = ['id','item','quantity','price','created','placed','customer','restaurant']
+        fields = ['id','item','itemname','quantity','price','placed','customer','restaurant_name','created','updated']
 
-class NestedUserOrderSerializer(serializers.ModelSerializer):
+# class NestedUserOrderSerializer(serializers.ModelSerializer):
+#     itemname = serializers.ReadOnlyField()
+#     image = serializers.ReadOnlyField()
 
-    menu_item=MenuSerializer(many=True,read_only=True)
-
-    class Meta:
-        model = UserOrder
-        fields = ['id','item','menu_item','quantity','price','created','placed','customer']
+#     class Meta:
+#         model = UserOrder
+#         fields = ['id','item','itemname','image','quantity','price','created','placed','customer']
 
 
 class ResOrderSerializer(serializers.ModelSerializer):
+    itemname = serializers.ReadOnlyField()
     class Meta:
         model = Order
-        fields = ['id','user_order','quantity','price','created','updated','status']
+        fields = ['customer','id','itemname','quantity','price','created','updated','status']
+
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,14 +30,6 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id','user_order','restaurant','quantity','price','created','updated','status']
         
 
-
-class NestedOrderSerializer(serializers.ModelSerializer):
-
-    # Order = (many=True,read_only=True)
-
-    class Meta:
-        model = Order
-        fields = ['id','user_order','created','updated','status']
 
         
     

@@ -55,12 +55,12 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(
-        verbose_name='email address',
+        verbose_name='E-mail',
         max_length=255,
         unique=True,
     )
     password = models.CharField(max_length=255)
-    username = models.CharField(max_length=50,unique=True)
+    username = models.CharField(max_length=50,unique=True,verbose_name='Username')
     firstname = models.CharField(max_length=100,null=True,blank=True)
     lastname = models.CharField(max_length=100,null=True,blank=True)
     is_active = models.BooleanField(default=True)

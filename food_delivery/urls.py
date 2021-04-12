@@ -97,7 +97,7 @@ urlpatterns = [
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/', menu.update_subcategory,name='update_subcategory'),
     
     # Add new Item in the menu
-    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/item/', menu.add_menu,name='add menu'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/items/', menu.add_menu,name='add menu'),
 
     # Update or Delete Menu Item
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/item/<int:item>/', menu.update_item,name='subcategory_item_detail'),

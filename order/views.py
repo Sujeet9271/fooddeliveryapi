@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
-from .serializers import OrderSerializer,UserOrderSerializer,NestedOrderSerializer,NestedUserOrderSerializer,ResOrderSerializer
+from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer
 
 from .models import Order,UserOrder
 
@@ -28,14 +28,12 @@ def create_cart(request,city,restaurant):
             order_id = order['id']
             order_quantity = order['quantity']
             menu = Menu.objects.get(id=order_id)
-            total_price = order_quantity*menu.price
 
             user_order = {
                 'customer':request.user.id,
                 'restaurant':menu.restaurant.id,
                 'item':order_id,
                 'quantity':order_quantity,
-                'price':total_price,
                 'placed':False
             }
             serializer = UserOrderSerializer(data=user_order)
@@ -54,24 +52,20 @@ def cart(request):
         total = 0
         items = UserOrder.objects.filter(customer=request.user.id).exclude(placed=True)
         for item in items:
-            total += item.price
-        serializer = NestedUserOrderSerializer(items,many=True)
+            total += item.price()
+        serializer = UserOrderSerializer(items,many=True)
         return Response({'orders':serializer.data,'total_price':total})
 
     if request.method == 'PATCH':
         for data in request.data:
-            id = data['id']
-            item = UserOrder.objects.get(id = id)
-            id = item.item.id
+            item = UserOrder.objects.get(id = data['id'])
             
-            order = Menu.objects.get(id = id)
+            order = Menu.objects.get(id = item.item.id)
         
             new_data = {
                 'id':data['id'],
                 'quantity':data['quantity'],
-                'price':data['quantity']*order.price
             }
-            print(new_data)
             update = UserOrderSerializer(instance = item, data=new_data, partial=True)
 
             if update.is_valid():
@@ -82,17 +76,20 @@ def cart(request):
         total = 0
         items = UserOrder.objects.filter(customer=request.user.id).exclude(placed=True)
         for item in items:
-            total += item.price
+            total += item.price()
         serializer = UserOrderSerializer(items,many=True)
         return Response({'orders':serializer.data,'total_price':total})
 
 
-@api_view(['GET','DELETE'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def cart_delete(request,id):
-    item = UserOrder.objects.get(id=id)
-    item.delete()
-    return Response('item deleted',status=status.HTTP_404_NOT_FOUND)
+    try:
+        item = UserOrder.objects.get(id=id)
+        item.delete()
+        return Response('item deleted')
+    except UserOrder.DoesNotExist():
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -107,7 +104,6 @@ def place_order(request):
             'status':'Pending',
             'user_order':order.id,
             'quantity':order.quantity,
-            'price':order.price
         }
         
         
@@ -124,13 +120,12 @@ def place_order(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def myorders(request):    
-    qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)
-    
-    serializer = NestedOrderSerializer(qs, many=True)
+    qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)    
+    serializer = OrderSerializer(qs, many=True)
 
     total_price = 0
     for order in qs:
-        total_price += order.price
+        total_price += order.user_order.price()
     
     return Response({'orders':serializer.data,'total price':[total_price]})
     
@@ -150,7 +145,7 @@ def order_received(request,city,restaurant):
             qs = Order.objects.filter(restaurant__city=city,restaurant=restaurant)
             for order in qs:
                 total_order += 1
-                revenue += order.user_order.price
+                revenue += order.user_order.price()
             serializer=ResOrderSerializer(qs, many=True)
             return Response({'total_orders':[total_order],'revenue':[revenue],'orders':serializer.data})
     return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)
@@ -171,12 +166,6 @@ def order_update(request,city,restaurant,id):
                     serializer.save()
                     return Response(serializer.data)
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-            # if request.method=='PUT':
-            #     serializer = OrderSerializer(instance = order, data=request.data)
-            #     if serializer.is_valid():
-            #         serializer.save()
-            #         return Response(serializer.data)
-            #     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
             return Response(serializer.data) 
 
         except Order.DoesNotExist:

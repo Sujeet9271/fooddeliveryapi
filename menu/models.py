@@ -18,6 +18,11 @@ class Category(models.Model):
         if self.restaurant.veg_only==True and self.category.lower() in ['nonveg','non veg','non-veg']:
             raise ValidationError(f"{self.restaurant} cannot have Non-Vegetarian Items")
 
+    def restaurant_name(self):
+        return self.restaurant.name
+
+
+
 
 class Sub_Category(models.Model):
     category=models.ForeignKey(Category, on_delete=models.CASCADE,related_name='sub_category')
@@ -32,6 +37,9 @@ class Sub_Category(models.Model):
     def clean(self):
         if self.category.restaurant.veg_only==True and self.sub_category.lower() in ['nonveg','non veg','non-veg']:
             raise ValidationError(f"{self.category.restaurant} cannot have Non-Vegetarian Items")
+
+    def restaurant_name(self):
+        return self.category.restaurant_name()
 
 def location(instance,filename):
     return f"{instance.restaurant.city}/{instance.restaurant.name}/menu/{filename}"
@@ -58,4 +66,13 @@ class Menu(models.Model):
     
     class Meta:
         db_table='Menu'
+
+    def restaurant_name(self):
+        return self.restaurant.name
+
+    def category_name(self):
+        return self.category.category
+
+    def subcategory_name(self):
+        return self.sub_category.sub_category
 

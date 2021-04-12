@@ -6,11 +6,10 @@ from menu.models import Category,Menu
 
 # Create your models here.
 class UserOrder(models.Model):
-    customer=models.ForeignKey(User,on_delete=models.CASCADE)
-    restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE)
-    item=models.ForeignKey(Menu,on_delete=models.CASCADE,related_name='menu_item')
+    customer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='customer')
+    restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name='restaurant')
+    item=models.ForeignKey(Menu,on_delete=models.CASCADE,related_name='menu')
     quantity=models.IntegerField(default=1)
-    price = models.IntegerField()
     placed = models.BooleanField(default=False)
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
@@ -21,6 +20,23 @@ class UserOrder(models.Model):
     class Meta:
         ordering=['-updated']
         db_table = 'UserOrder'
+    
+    def itemname(self):
+        return f"{self.item.itemname}-{self.item.category.category}"
+
+    def image(self):
+        return self.item.image
+    
+    def restaurant_name(self):
+        return self.restaurant.name
+
+    def price(self):
+        return (self.quantity*self.item.price)
+
+    def customer_name(self):
+        if 'None' in self.customer.get_full_name().split(' '):
+            return self.customer.get_short_name()
+        return self.customer.get_full_name()
 
         
 class Order(models.Model):
@@ -28,12 +44,10 @@ class Order(models.Model):
         ('Pending',('Pending')),('Received',('Received')),('Placed',('Placed')),('Out for Delivery',('Out for Delivery')),('Delivered',('Delivered'))
     )
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    user_order = models.ForeignKey(UserOrder, on_delete=models.CASCADE,related_name='user_order')
-    quantity = models.IntegerField(default=1)
+    user_order = models.ForeignKey(UserOrder, on_delete=models.CASCADE,related_name='order')
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
     status=models.CharField(max_length=50, choices=STATUS, default='Pending')
-    price = models.IntegerField()
 
     
     class Meta:
@@ -42,4 +56,20 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Item={self.user_order.item.itemname}, Quantity={self.user_order.quantity}, Price={self.user_order.quantity*self.user_order.item.price}"
+
+    def itemname(self):
+        return self.user_order.item.itemname
+    
+    def image(self):
+        return self.user_order.item.image
+
+    def customer(self):
+        if 'None' in self.user_order.customer.get_full_name().split(' '):
+            return self.user_order.customer.get_short_name()
+        return self.user_order.customer.get_full_name()
+
+    def price(self):
+        return(self.user_order.price())
+    
+
  

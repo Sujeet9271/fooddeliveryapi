@@ -32,3 +32,6 @@ class Restaurant(models.Model):
 
     class Meta:
         db_table = 'Restaurant'
+
+    def city_name(self):
+        return self.city.name
