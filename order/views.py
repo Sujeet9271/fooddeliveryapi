@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
-from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer
+from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer,AddressSerializer
 
-from .models import Order,UserOrder
+from .models import Order,UserOrder,Delivery
 
 from menu.views import res_category,sub_category,item
 from menu.models import Category,Sub_Category,Menu
@@ -93,28 +93,50 @@ def cart_delete(request,id):
 
 
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def place_order(request):
-    cart = UserOrder.objects.filter(customer = request.user.id).exclude(placed=True)
-    serializer = UserOrderSerializer(many=True)
-    for order in cart:
-        staff = {
-            'restaurant':order.restaurant.id,
-            'status':'Pending',
-            'user_order':order.id,
-            'quantity':order.quantity,
-        }
-        
-        
-        orderserializer = OrderSerializer(data=staff)
-        if orderserializer.is_valid():
-            orderserializer.save()
-        else:
-            return Response(orderserializer.errors)
+    if request.method=='GET':
+        cart = UserOrder.objects.filter(customer = request.user.id).exclude(placed=True)
+        items = UserOrderSerializer(cart,many=True)
 
-    cart = UserOrder.objects.filter(customer = request.user.id).update(placed=True) 
-    return Response('Order Placed')
+        try:
+            query = Delivery.objects.get(user__id=request.user.id)
+            address = AddressSerializer(query)
+            return Response({'address':address.data,'cart':items.data})
+        except Delivery.DoesNotExist:
+            return Response({'address':'','cart':items.data})
+    elif request.method=='POST':
+        if request.data:
+            address = request.data['address']
+            contact_number = request.data['contact_number']
+            address = Delivery.objects.filter(user=request.user).update(contact_number=contact_number,address=address)
+        
+        address = Delivery.objects.get(user=request.user)
+        print(address.id)
+        cart = UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True).exists()
+        if cart:
+            for order in UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True):
+                item = {
+                    'restaurant':order.restaurant.id,
+                    'status':'Received',
+                    'user_order':order.id,
+                    'delivery':address.id                   
+                }
+                
+                
+                orderserializer = OrderSerializer(data=item)
+                if orderserializer.is_valid():
+                    orderserializer.save()
+                else:
+                    return Response(orderserializer.errors)
+
+            cart = UserOrder.objects.filter(customer = request.user.id).update(placed=True) 
+            return Response('Order Placed')
+        else:
+            return Response('Cart is Empty')
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])

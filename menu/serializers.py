@@ -25,7 +25,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model=Menu
-        fields=['id','itemname','description','price','rating','restaurant','category','sub_category','res_name','cat_name','subcate_name']
+        fields=['id','itemname','description','price','rating','restaurant','category','sub_category','restaurant_name','category_name','subcategory_name']
 
 class NestedSubCategorySerializer(serializers.ModelSerializer):
     

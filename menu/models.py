@@ -29,7 +29,7 @@ class Sub_Category(models.Model):
     sub_category=models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.sub_category}({self.category} from {self.category.restaurant})"
+        return f"{self.sub_category}({self.category})"
     
     class Meta:
         db_table='Sub_Category'
@@ -56,7 +56,7 @@ class Menu(models.Model):
     category=models.ForeignKey(Category, on_delete=models.CASCADE)
     sub_category=models.ForeignKey(Sub_Category, on_delete=models.CASCADE,related_name='menu')
     itemname=models.CharField(max_length=255)
-    price=models.IntegerField()
+    price=models.PositiveIntegerField()
     description = models.TextField(null=True,blank=True)
     rating=models.CharField(max_length=50,choices=STATUS,null=True,default='Unrated')
     image = models.ImageField(null=True,blank=True,upload_to=location)

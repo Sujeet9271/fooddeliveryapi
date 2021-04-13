@@ -5,11 +5,26 @@ from restaurant.models import Restaurant
 from menu.models import Category,Menu
 
 # Create your models here.
+class Delivery(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    contact_number = models.PositiveIntegerField(help_text='Contact phone number for food delivery')
+    address = models.TextField(default='',help_text='Address')
+
+    
+
+    def __str__(self):
+        return self.address
+    
+    def user_name(self):
+        if 'None' in self.user.get_full_name().split(' '):
+            return self.user.get_short_name()
+        return self.user.get_full_name()
+
 class UserOrder(models.Model):
     customer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='customer')
     restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name='restaurant')
     item=models.ForeignKey(Menu,on_delete=models.CASCADE,related_name='menu')
-    quantity=models.IntegerField(default=1)
+    quantity=models.PositiveIntegerField(default=1)
     placed = models.BooleanField(default=False)
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
@@ -38,6 +53,8 @@ class UserOrder(models.Model):
             return self.customer.get_short_name()
         return self.customer.get_full_name()
 
+
+
         
 class Order(models.Model):
     STATUS=(
@@ -45,6 +62,7 @@ class Order(models.Model):
     )
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     user_order = models.ForeignKey(UserOrder, on_delete=models.CASCADE,related_name='order')
+    delivery = models.ForeignKey(Delivery,on_delete=models.CASCADE)
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
     status=models.CharField(max_length=50, choices=STATUS, default='Pending')
@@ -70,6 +88,9 @@ class Order(models.Model):
 
     def price(self):
         return(self.user_order.price())
+
+    def delivery_address(self):
+        return self.delivery.address
     
 
  

@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager,AbstractBaseUser,PermissionsMixin
 from django.contrib.auth import password_validation
-
         
 class UserManager(BaseUserManager):
     def create_user(self,username, firstname, lastname, staff, restaurant, email, password=None):
@@ -44,8 +43,14 @@ class UserManager(BaseUserManager):
         Creates and saves a superuser with the given email and password.
         """
         user = self.create_user(
-            email,
+            email=email,
+            username='admin',
             password=password,
+            firstname= 'admin',
+            lastname= 'admin',
+            restaurant=0,
+            staff=True
+
         )
         user.staff = True
         user.admin = True
@@ -66,7 +71,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_active = models.BooleanField(default=True)
     staff = models.BooleanField(default=False) # a restaurant staff
     admin = models.BooleanField(default=False) # a superuser
-    restaurant = models.IntegerField(default=0,null=True,blank=True)
+    restaurant = models.PositiveIntegerField(default=0,null=True,blank=True)
     created = models.DateTimeField(auto_now_add=True,auto_now=False)
     updated = models.DateTimeField(auto_now_add=False,auto_now=True)
 
@@ -107,6 +112,9 @@ class User(AbstractBaseUser,PermissionsMixin):
     def is_superuser(self):
         "Is the user a admin member?"
         return self.admin
+
+
+
 
 
 

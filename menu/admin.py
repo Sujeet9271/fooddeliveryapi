@@ -11,4 +11,4 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display=['id','itemname','price','description','subcategory_name','category_name','restaurant_name'] 
+    list_display=['id','itemname','price','description','sub_category','category','restaurant'] 
