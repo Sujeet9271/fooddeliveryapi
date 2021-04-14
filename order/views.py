@@ -113,7 +113,6 @@ def place_order(request):
             address = Delivery.objects.filter(user=request.user).update(contact_number=contact_number,address=address)
         
         address = Delivery.objects.get(user=request.user)
-        print(address.id)
         cart = UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True).exists()
         if cart:
             for order in UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True):
