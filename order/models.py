@@ -23,11 +23,12 @@ class Delivery(models.Model):
 class UserOrder(models.Model):
     customer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='customer')
     restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name='restaurant')
-    item=models.ForeignKey(Menu,on_delete=models.CASCADE,related_name='menu')
+    item=models.ForeignKey(Menu,on_delete=models.CASCADE,related_name='cart_item')
     quantity=models.PositiveIntegerField(default=1)
     placed = models.BooleanField(default=False)
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
+    deliver_to = models.ForeignKey(Delivery,on_delete=models.CASCADE,default=1)
 
     def __str__(self):
         return f"Item={self.item.itemname}, Quantity={self.quantity}, Price={self.quantity*self.item.price}"
@@ -40,7 +41,7 @@ class UserOrder(models.Model):
         return f"{self.item.itemname}-{self.item.category.category}"
 
     def image(self):
-        return self.item.image
+        return self.item.image.url
     
     def restaurant_name(self):
         return self.restaurant.name
@@ -52,6 +53,9 @@ class UserOrder(models.Model):
         if 'None' in self.customer.get_full_name().split(' '):
             return self.customer.get_short_name()
         return self.customer.get_full_name()
+    
+    def address(self):
+        return self.deliver_to.address
 
 
 
@@ -62,7 +66,6 @@ class Order(models.Model):
     )
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     user_order = models.ForeignKey(UserOrder, on_delete=models.CASCADE,related_name='order')
-    delivery = models.ForeignKey(Delivery,on_delete=models.CASCADE)
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
     status=models.CharField(max_length=50, choices=STATUS, default='Pending')
@@ -79,7 +82,7 @@ class Order(models.Model):
         return self.user_order.item.itemname
     
     def image(self):
-        return self.user_order.item.image
+        return self.user_order.item.image.url
 
     def customer(self):
         if 'None' in self.user_order.customer.get_full_name().split(' '):
@@ -90,7 +93,9 @@ class Order(models.Model):
         return(self.user_order.price())
 
     def delivery_address(self):
-        return self.delivery.address
+        return self.user_order.deliver_to.address
+
+    
     
 
  

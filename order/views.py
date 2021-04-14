@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
-from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer,AddressSerializer
+from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer,AddressSerializer,MyOrderSerializer
 
 from .models import Order,UserOrder,Delivery
 
@@ -24,6 +24,7 @@ def create_cart(request,city,restaurant):
         return Response(serializer.data)
     else:
         orders=request.data
+        address = Delivery.objects.get(user=request.user)
         for order in orders:
             order_id = order['id']
             order_quantity = order['quantity']
@@ -34,7 +35,8 @@ def create_cart(request,city,restaurant):
                 'restaurant':menu.restaurant.id,
                 'item':order_id,
                 'quantity':order_quantity,
-                'placed':False
+                'placed':False,
+                'delivery':address.id
             }
             serializer = UserOrderSerializer(data=user_order)
 
@@ -112,7 +114,6 @@ def place_order(request):
             contact_number = request.data['contact_number']
             address = Delivery.objects.filter(user=request.user).update(contact_number=contact_number,address=address)
         
-        address = Delivery.objects.get(user=request.user)
         cart = UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True).exists()
         if cart:
             for order in UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True):
@@ -120,7 +121,6 @@ def place_order(request):
                     'restaurant':order.restaurant.id,
                     'status':'Received',
                     'user_order':order.id,
-                    'delivery':address.id                   
                 }
                 
                 
@@ -142,7 +142,7 @@ def place_order(request):
 @permission_classes([IsAuthenticated])
 def myorders(request):    
     qs = Order.objects.select_related('user_order').filter(user_order__customer=request.user.id)    
-    serializer = OrderSerializer(qs, many=True)
+    serializer = MyOrderSerializer(qs, many=True)
 
     total_price = 0
     for order in qs:

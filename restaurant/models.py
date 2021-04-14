@@ -24,6 +24,7 @@ class Restaurant(models.Model):
     rating=models.CharField(max_length=50,choices=Rating,default='Unrated',null=True)
     veg_only = models.BooleanField(default=False)
     image = models.ImageField(null=True,blank=True,upload_to=location)
+    
 
 
 
