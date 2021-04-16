@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .forms import UserAdminCreationForm, UserAdminChangeForm
+from .models import Profile
 
 User = get_user_model()
 
@@ -41,6 +42,11 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ['email','username','firstname','lastname']
     ordering = ['id']
     filter_horizontal = ()
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display=['id','user','address','contact_number']
 
 
 admin.site.register(User, UserAdmin)

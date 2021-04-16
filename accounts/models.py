@@ -116,5 +116,12 @@ class User(AbstractBaseUser,PermissionsMixin):
 
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE,default=1)
+    address = models.TextField(null=True,blank=True)
+    contact_number = models.CharField(max_length=10,default=0)
+
+    class Meta:
+        db_table='Profile'
 
 

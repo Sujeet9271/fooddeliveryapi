@@ -74,6 +74,8 @@ urlpatterns = [
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/register/', accounts.staff_register, name="staff register"),
     # for  viewing and updating orders from staff end 
 
+    path('staff/orders/',order.new_order_received,name='Orders'),
+
     # For Restaurant's DashBoard
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/orders/', order.order_received,name='orders received'),
 

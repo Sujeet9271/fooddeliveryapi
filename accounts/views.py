@@ -3,7 +3,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
-from .models import User
+from .models import User,Profile
 from .serializers import UserLoginSerializer,StaffRegistrationSerializer,CustomerRegistrationSerializer
 
 from restaurant.models import Restaurant
@@ -68,9 +68,11 @@ def customer_register(request):
                     return Response('User with same email already exists')
                 else:
                     user = User.objects.create_user(username=username, password=password, firstname=firstname, lastname=lastname, email=email,staff=False,restaurant=0)
+                    profile = Profile.objects.create(user=user,address='',contact_number=0)
                     user.save()
+                    profile.save()
                     return Response('User Registered successfully',status=status.HTTP_201_CREATED)
-                return redirect('auth_user')
+                
             else:
                 return Response('Password and Confirm Password doesnot match')
         else:

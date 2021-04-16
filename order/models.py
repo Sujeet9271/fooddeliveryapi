@@ -5,20 +5,6 @@ from restaurant.models import Restaurant
 from menu.models import Category,Menu
 
 # Create your models here.
-class Delivery(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
-    contact_number = models.PositiveIntegerField(help_text='Contact phone number for food delivery')
-    address = models.TextField(default='',help_text='Address')
-
-    
-
-    def __str__(self):
-        return self.address
-    
-    def user_name(self):
-        if 'None' in self.user.get_full_name().split(' '):
-            return self.user.get_short_name()
-        return self.user.get_full_name()
 
 class UserOrder(models.Model):
     customer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='customer')
@@ -28,7 +14,6 @@ class UserOrder(models.Model):
     placed = models.BooleanField(default=False)
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
-    deliver_to = models.ForeignKey(Delivery,on_delete=models.CASCADE,default=1)
 
     def __str__(self):
         return f"Item={self.item.itemname}, Quantity={self.quantity}, Price={self.quantity*self.item.price}"
@@ -54,11 +39,13 @@ class UserOrder(models.Model):
             return self.customer.get_short_name()
         return self.customer.get_full_name()
     
-    def address(self):
-        return self.deliver_to.address
 
 
+def user_address(instance):
+    return instance.user_order.customer.profile.address
 
+def user_contact(instance):
+    return instance.user_order.customer.profile.contact_number
         
 class Order(models.Model):
     STATUS=(
@@ -69,6 +56,8 @@ class Order(models.Model):
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
     status=models.CharField(max_length=50, choices=STATUS, default='Pending')
+    address = models.TextField(default=user_address)
+    contact_number = models.CharField(max_length=10,default=user_contact)
 
     
     class Meta:
@@ -92,8 +81,11 @@ class Order(models.Model):
     def price(self):
         return(self.user_order.price())
 
+    def quantity(self):
+        return self.user_order.quantity
+
     def delivery_address(self):
-        return self.user_order.deliver_to.address
+        return self.address
 
     
     

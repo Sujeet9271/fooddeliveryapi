@@ -3,9 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
-from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer,AddressSerializer,MyOrderSerializer
+from .serializers import OrderSerializer,UserOrderSerializer,ResOrderSerializer,MyOrderSerializer
 
-from .models import Order,UserOrder,Delivery
+from .models import Order,UserOrder
+from accounts.serializers import ProfileSerializer
+from accounts.models import Profile
 
 from menu.views import res_category,sub_category,item
 from menu.models import Category,Sub_Category,Menu
@@ -24,7 +26,6 @@ def create_cart(request,city,restaurant):
         return Response(serializer.data)
     else:
         orders=request.data
-        address = Delivery.objects.get(user=request.user)
         for order in orders:
             order_id = order['id']
             order_quantity = order['quantity']
@@ -35,8 +36,7 @@ def create_cart(request,city,restaurant):
                 'restaurant':menu.restaurant.id,
                 'item':order_id,
                 'quantity':order_quantity,
-                'placed':False,
-                'delivery':address.id
+                'placed':False
             }
             serializer = UserOrderSerializer(data=user_order)
 
@@ -101,19 +101,21 @@ def place_order(request):
     if request.method=='GET':
         cart = UserOrder.objects.filter(customer = request.user.id).exclude(placed=True)
         items = UserOrderSerializer(cart,many=True)
-
         try:
-            query = Delivery.objects.get(user__id=request.user.id)
-            address = AddressSerializer(query)
+            query = Profile.objects.get(user__id=request.user.id)
+            address = ProfileSerializer(query)
             return Response({'address':address.data,'cart':items.data})
-        except Delivery.DoesNotExist:
+        except Profile.DoesNotExist:
             return Response({'address':'','cart':items.data})
     elif request.method=='POST':
         if request.data:
             address = request.data['address']
             contact_number = request.data['contact_number']
-            address = Delivery.objects.filter(user=request.user).update(contact_number=contact_number,address=address)
-        
+        else:
+            user = Profile.objects.get(user=request.user)
+            address = user.address
+            contact_number = user.contact_number
+
         cart = UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True).exists()
         if cart:
             for order in UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True):
@@ -121,6 +123,8 @@ def place_order(request):
                     'restaurant':order.restaurant.id,
                     'status':'Received',
                     'user_order':order.id,
+                    'address':address,
+                    'contact_number':contact_number
                 }
                 
                 
@@ -156,21 +160,59 @@ def myorders(request):
 
 # For Restaurant----------------------------------------------------------------------------------------------------------------------------------------------------
 
-@api_view(['GET'])
+@api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
 def order_received(request,city,restaurant):
     if request.user.is_superuser or (request.user.is_staff and request.user.restaurant==restaurant):
         revenue=0
         total_order=0
         if request.method == 'GET':
-            qs = Order.objects.filter(restaurant__city=city,restaurant=restaurant)
+            qs = Order.objects.filter(restaurant=restaurant)
             for order in qs:
                 total_order += 1
                 revenue += order.user_order.price()
             serializer=ResOrderSerializer(qs, many=True)
             return Response({'total_orders':[total_order],'revenue':[revenue],'orders':serializer.data})
+        elif request.method == 'PATCH':
+            try:
+                id=request.data['id']   
+                order = Order.objects.get(restaurant=restaurant,restaurant__city=city,id=id)   
+                serializer = OrderSerializer(instance = order, data=request.data, partial=True)                    
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            except Order.DoesNotExist:
+                return Response('NOT Found',status=status.HTTP_404_NOT_FOUND)
     return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)
 
+
+@api_view(['GET','PATCH'])
+@permission_classes([IsAuthenticated])
+def new_order_received(request):
+    if request.user.is_superuser or (request.user.is_staff and request.user.restaurant!=0):
+        print(request.user.restaurant)
+        revenue=0
+        total_order=0
+        if request.method == 'GET':
+            qs = Order.objects.filter(restaurant=request.user.restaurant)
+            for order in qs:
+                total_order += 1
+                revenue += order.user_order.price()
+            serializer=ResOrderSerializer(qs, many=True)
+            return Response({'total_orders':[total_order],'revenue':[revenue],'orders':serializer.data})
+        elif request.method == 'PATCH':
+            try:
+                id=request.data['id']   
+                order = Order.objects.get(restaurant=request.user.restaurant,id=id)   
+                serializer = OrderSerializer(instance = order, data=request.data, partial=True)                    
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            except Order.DoesNotExist:
+                return Response('NOT Found',status=status.HTTP_404_NOT_FOUND)
+    return Response({'ACCESS DENIED':'ACCESS DENIED'},status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(['GET','PATCH'])

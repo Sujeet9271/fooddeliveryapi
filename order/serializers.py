@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order,UserOrder,Delivery
+from .models import Order,UserOrder
 from menu.serializers import MenuSerializer
 from menu.models import Menu
 
@@ -7,22 +7,7 @@ class UserOrderSerializer(serializers.ModelSerializer):
     itemname = serializers.ReadOnlyField()
     class Meta:
         model = UserOrder
-        fields = ['id','item','itemname','image','quantity','price','placed','customer','restaurant','restaurant_name','created','updated','address']
-
-# class CartSerializer(serializers.ModelSerializer):
-#     cart_item = UserOrderSerializer(many=True,read_only=True)
-
-#     class Meta:
-#         model = Menu
-#         fields = ['image','cart_item']
-
-# class NestedUserOrderSerializer(serializers.ModelSerializer):
-#     itemname = serializers.ReadOnlyField()
-#     image = serializers.ReadOnlyField()
-
-#     class Meta:
-#         model = UserOrder
-#         fields = ['id','item','itemname','image','quantity','price','created','placed','customer']
+        fields = ['id','item','itemname','image','quantity','price','placed','customer','restaurant','restaurant_name','created','updated']
 
 
 class ResOrderSerializer(serializers.ModelSerializer):
@@ -35,18 +20,13 @@ class ResOrderSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['id','user_order','image','restaurant','price','created','updated','status']
+        fields = ['id','user_order','image','restaurant','price','created','updated','status','address','contact_number']
 
 class MyOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id','user_order','image','restaurant','price','created','status','delivery_address']
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Delivery
-        fields = ['id','user_name','contact_number','address']
-        
 
 
         
