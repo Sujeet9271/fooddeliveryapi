@@ -81,6 +81,9 @@ class Order(models.Model):
     def delivery_address(self):
         return self.address
 
+    def restaurant_name(self):
+        return self.user_order.restaurant_name()
+
     
     
 
