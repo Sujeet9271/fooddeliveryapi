@@ -109,4 +109,4 @@ urlpatterns = [
     # Update or Delete Menu Item
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/item/<int:item>/', menu.update_item,name='subcategory_item_detail'),
 
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

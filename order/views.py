@@ -149,10 +149,12 @@ def myorders(request):
     serializer = MyOrderSerializer(qs, many=True)
 
     total_price = 0
+    total_item = 0
     for order in qs:
         total_price += order.user_order.price()
+        total_item+=1
     
-    return Response({'orders':serializer.data,'total price':[total_price]})
+    return Response({'orders':serializer.data,'total_price':[total_price],'total_item':total_item})
     
 
 
