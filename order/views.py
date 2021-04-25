@@ -98,19 +98,24 @@ def cart_delete(request,id):
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def place_order(request):
+    user = Profile.objects.get(user = request.user)
+    address = user.address
+    contact_number = user.contact_number
     if request.method=='GET':
         cart = UserOrder.objects.filter(customer = request.user.id).exclude(placed=True)
         items = UserOrderSerializer(cart,many=True)
         try:
-            query = Profile.objects.get(user__id=request.user.id)
-            address = ProfileSerializer(query)
+            address = ProfileSerializer(user)
             return Response({'address':address.data,'cart':items.data})
         except Profile.DoesNotExist:
             return Response({'address':'','cart':items.data})
-    elif request.method=='POST':
+    elif request.method=='POST':   
+        user = Profile.objects.get(user = request.user)
+        address = user.address
+        contact_number = user.contact_number     
         if request.data:
-            address = request.data['address']
-            contact_number = request.data['contact_number']
+            address = address if request.data['address'] == '' else request.data[address] 
+            contact_number =  contact_number if request.data['contact_number']=='' else request.data['contact_number']
         else:
             user = Profile.objects.get(user=request.user)
             address = user.address
