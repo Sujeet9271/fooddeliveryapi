@@ -89,9 +89,9 @@ def profile(request):
         user = User.objects.get(id=request.user.id)
         if request.method == 'GET':
             serializer = UserProfile(user)
-            return Response([serializer.data])
-        if request.method == 'PATCH':
+            return Response(serializer.data,status=status.HTTP_200_OK)
 
+        if request.method == 'PATCH':
             pass
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
