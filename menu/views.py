@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import MenuSerializer,SubCategorySerializer,CategorySerializer,NestedSubCategorySerializer,NestedCategorySerializer
-from .models import Menu,Sub_Category,Category
+from .models import Menu,Sub_Category,Category,Rating
 from order.serializers import OrderSerializer,UserOrderSerializer
 
 
@@ -93,8 +93,22 @@ def item(city,restaurant,category,subcategory):
     return Menu.objects.select_related('sub_category').filter(restaurant__city=city,restaurant=restaurant,category=category,sub_category=subcategory)
 
 
-
-
+@api_view(['GET','POST','PATCH'])
+def rate_item(request,city,restaurant,id):
+    item = Menu.objects.get(id=id)
+    if request.method == 'GET':
+        serializer = MenuSerializer(item)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        rating = request.data['rating']
+        item_rating = Rating.objects.create(user=request.user,item=item,rating=rating)
+        item_rating.save()
+        return Response('rated')
+    elif request.method == 'PATCH':
+        rating = request.data['rating']
+        item_rating = Rating.objects.filter(user=request.user,item=item).update(rating=rating)
+        return Response('rated')
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])

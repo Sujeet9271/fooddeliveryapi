@@ -24,6 +24,7 @@ urlpatterns = [
     path('accounts/login/', TokenObtainPairView.as_view(), name='login'),
     path('accounts/register/', accounts.customer_register, name = 'customer'),
     path('accounts/logout/', accounts.BlacklistTokenView.as_view(), name='logout'),
+    path('accounts/profile/',accounts.profile),
 
     #  Detail of Available Restaurants with their detail menu with category and sub category from the selected City
     path('detail/cities/',city.detail_city, name='detail_city'),
@@ -45,11 +46,15 @@ urlpatterns = [
     # for Viewing all the Available restaurants in the city
     path('cities/<int:city>/', restaurant.restaurant, name='restaurants'),
 
+    path('cities/<int:city>/res/<int:restaurant>/', restaurant.rate_restaurant, name='rate restaurants'),
+
     # for Viewing all the Available Veg only restaurants in the city
     path('cities/<int:city>/restaurant/veg_only/', restaurant.veg_restaurant, name='veg restaurants'),
 
     # Detail view of Restaurant's Menu
     path('cities/<int:city>/restaurant/<int:restaurant>/', order.create_cart, name='create order'),
+
+    path('cities/<int:city>/restaurant/<int:restaurant>/item/<int:id>/', menu.rate_item, name='rating item'),
 
     # Restaurant Menu's Available Categories
     path('cities/<int:city>/restaurant/<int:restaurant>/category/', menu.restaurant_category, name='restaurant_category'),

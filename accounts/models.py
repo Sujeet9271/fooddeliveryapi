@@ -113,13 +113,15 @@ class User(AbstractBaseUser,PermissionsMixin):
         "Is the user a admin member?"
         return self.admin
 
-
+def location(instance,filename):
+    return f"User/{instance.user.username}/{filename}"
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE,default=1)
+    user = models.OneToOneField(User,on_delete=models.CASCADE,default=1,related_name='profile')
+    profile_pic = models.ImageField(blank=True,null=True,upload_to=location)
     address = models.TextField(null=True,blank=True)
-    contact_number = models.CharField(max_length=10,default=0)
+    contact_number = models.CharField(max_length=10,default='')
 
     class Meta:
         db_table='Profile'

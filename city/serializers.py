@@ -5,7 +5,7 @@ from restaurant.serializers import NestedRestaurantSerializer
 class CitySerializer(ModelSerializer):
     class Meta:
         model=City
-        fields='__all__'
+        fields = ['id','name','pincode','image']
 
 class NestedCitySerializer(ModelSerializer):
     restaurant = NestedRestaurantSerializer(many=True,read_only=True)

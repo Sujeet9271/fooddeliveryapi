@@ -4,16 +4,17 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 from .models import User,Profile
-from .serializers import UserLoginSerializer,StaffRegistrationSerializer,CustomerRegistrationSerializer
+from .serializers import UserLoginSerializer,StaffRegistrationSerializer,CustomerRegistrationSerializer,UserProfile,ProfileSerializer
 
 from restaurant.models import Restaurant
 
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User
 
 
 
@@ -80,6 +81,22 @@ def customer_register(request):
     else:
         return Response('Welcome')
 
+
+@api_view(['GET','PATCH'])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    try:
+        user = User.objects.get(id=request.user.id)
+        if request.method == 'GET':
+            serializer = UserProfile(user)
+            return Response([serializer.data])
+        if request.method == 'PATCH':
+
+            pass
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+
 class BlacklistTokenView(APIView):
     permission_classes=[AllowAny]
     def post(self,request):
@@ -92,12 +109,7 @@ class BlacklistTokenView(APIView):
             print(Exception)
             return Response('Exception',status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
-def next(request):
-    if request.user.is_staff:
-        return Response('Welcome Customer')
-    else:
-        return Response('Welcome Staff')
+
 
 # @api_view(['GET'])
 # def _logout(request):

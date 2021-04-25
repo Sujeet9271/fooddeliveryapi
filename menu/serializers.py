@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Menu,Sub_Category,Category
+from .models import Menu,Sub_Category,Category,Rating
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model=Menu
-        fields=['id','itemname','description','price','rating','restaurant','category','sub_category','restaurant_name','category_name','subcategory_name']
+        fields=['id','itemname','description','image','price','rating_average','review_count','restaurant','category','sub_category','restaurant_name','category_name','subcategory_name']
 
 class NestedSubCategorySerializer(serializers.ModelSerializer):
     
@@ -43,3 +43,8 @@ class NestedCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model=Category
         fields=['id','category','sub_category']
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['user','item_name','rating']

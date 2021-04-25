@@ -7,7 +7,7 @@ def location(instance,filename):
 class City(models.Model):
     name=models.CharField(max_length=255)
     image = models.ImageField(null=True,blank=True,upload_to=location)
-    pincode=models.IntegerField()
+    pincode=models.PositiveIntegerField()
 
     def __str__(self):
         return f"{self.name}"

@@ -41,12 +41,6 @@ class UserOrder(models.Model):
     
 
 
-def user_address(instance):
-    return instance.user_order.customer.profile.address
-
-def user_contact(instance):
-    return instance.user_order.customer.profile.contact_number
-        
 class Order(models.Model):
     STATUS=(
         ('Pending',('Pending')),('Received',('Received')),('Placed',('Placed')),('Out for Delivery',('Out for Delivery')),('Delivered',('Delivered'))
@@ -56,8 +50,8 @@ class Order(models.Model):
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
     status=models.CharField(max_length=50, choices=STATUS, default='Pending')
-    address = models.TextField(default=user_address)
-    contact_number = models.CharField(max_length=10,default=user_contact)
+    address = models.TextField()
+    contact_number = models.CharField(max_length=10)
 
     
     class Meta:
