@@ -5,6 +5,7 @@ from restaurant.models import Restaurant
 from accounts.models import User
 # Create your models here.
 class Category(models.Model):
+    
     restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name='category')
     category=models.CharField(max_length=50)
 
@@ -41,6 +42,9 @@ class Sub_Category(models.Model):
     def restaurant_name(self):
         return self.category.restaurant_name()
 
+    def category_name(self):
+        return self.category.category
+
 def location(instance,filename):
     return f"{instance.restaurant.city}/{instance.restaurant.name}/menu/{filename}"
 
@@ -55,6 +59,7 @@ class Menu(models.Model):
     image = models.ImageField(null=True,blank=True,upload_to=location)
     rating_average = models.FloatField(default=0)
     review_count = models.IntegerField(default=0)
+    available= models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.itemname}({self.category.category}) from {self.restaurant}"

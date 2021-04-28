@@ -13,7 +13,7 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display=['id','itemname','price','description','sub_category','category','restaurant','review_count','rating_average'] 
+    list_display=['id','available','itemname','price','description','sub_category','category','restaurant','review_count','rating_average'] 
     list_filter=['sub_category','category']
 
 @admin.register(Rating)

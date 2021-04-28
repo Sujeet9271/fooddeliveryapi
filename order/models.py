@@ -43,13 +43,13 @@ class UserOrder(models.Model):
 
 class Order(models.Model):
     STATUS=(
-        ('Pending',('Pending')),('Received',('Received')),('Placed',('Placed')),('Out for Delivery',('Out for Delivery')),('Delivered',('Delivered'))
+        (1,('Pending')),(2,('Received')),(3,('In the Kitchen')),(4,('Out for Delivery')),(5,('Delivered'))
     )
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     user_order = models.ForeignKey(UserOrder, on_delete=models.CASCADE,related_name='order')
     created=models.DateTimeField(auto_now_add=True, auto_now=False)
     updated=models.DateTimeField(auto_now=True)
-    status=models.CharField(max_length=50, choices=STATUS, default='Pending')
+    status=models.IntegerField(choices=STATUS, default=1)
     address = models.TextField()
     contact_number = models.CharField(max_length=10)
 
@@ -65,7 +65,10 @@ class Order(models.Model):
         return self.user_order.item.itemname
     
     def image(self):
-        return self.user_order.item.image.url
+        if self.user_order.item.image:
+            return self.user_order.item.image.url
+        else:
+            return None
 
     def customer(self):
         if 'None' in self.user_order.customer.get_full_name().split(' '):

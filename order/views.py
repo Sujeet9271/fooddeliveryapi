@@ -9,7 +9,7 @@ from .models import Order,UserOrder
 from accounts.serializers import ProfileSerializer
 from accounts.models import Profile
 
-from menu.views import res_category,sub_category,item
+from menu.views import res_category,sub_category
 from menu.models import Category,Sub_Category,Menu
 from menu.serializers import NestedCategorySerializer
 from datetime import date
@@ -173,7 +173,7 @@ def order_received(request,city,restaurant):
         revenue=0
         total_order=0
         if request.method == 'GET':
-            qs = Order.objects.filter(restaurant=restaurant)
+            qs = Order.objects.filter(restaurant=restaurant).exclude(status=5)
             for order in qs:
                 total_order += 1
                 revenue += order.user_order.price()
@@ -195,13 +195,12 @@ def order_received(request,city,restaurant):
 
 @api_view(['GET','PATCH'])
 @permission_classes([IsAuthenticated])
-def new_order_received(request):
+def allorders(request,city,restaurant):
     if request.user.is_superuser or (request.user.is_staff and request.user.restaurant!=0):
-        print(request.user.restaurant)
         revenue=0
         total_order=0
         if request.method == 'GET':
-            qs = Order.objects.filter(restaurant=request.user.restaurant)
+            qs = Order.objects.filter(restaurant=restaurant)
             for order in qs:
                 total_order += 1
                 revenue += order.user_order.price()
@@ -229,8 +228,7 @@ def order_update(request,city,restaurant,id):
             order = Order.objects.get(restaurant=restaurant,restaurant__city=city,id=id)   
             serializer = OrderSerializer(order)
             if request.method == 'PATCH':
-                serializer = OrderSerializer(instance = order, data=request.data, partial=True)
-                
+                serializer = OrderSerializer(instance = order, data=request.data, partial=True)                
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)

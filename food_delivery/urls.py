@@ -79,10 +79,10 @@ urlpatterns = [
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/register/', accounts.staff_register, name="staff register"),
     # for  viewing and updating orders from staff end 
 
-    path('staff/orders/',order.new_order_received,name='Orders'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/orders/all/',order.allorders,name='Orders'),
 
     # For Restaurant's DashBoard
-    path('cities/<int:city>/restaurant/<int:restaurant>/staff/orders/', order.order_received,name='orders received'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/orders/today/', order.order_received,name='orders received'),
 
     # For Updating Received Order's Status
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/orders/<int:id>/', order.order_update,name='update order'),
@@ -90,6 +90,12 @@ urlpatterns = [
     # for viewing,updating and deleting menu items from staff end
     # Detail View of restaurant's menu
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/', menu.detail_menu, name='restaurant_menu'),
+
+     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allitems/', menu.allitems, name='all_items'),
+
+     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allitems/<int:id>/', menu.updateitem, name='update item'),
+
+     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allsubs/', menu.allsub, name='all_subs'),
 
     # View or Add Category
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/', menu.category,name='category'),
