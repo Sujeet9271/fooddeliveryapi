@@ -26,7 +26,10 @@ class UserOrder(models.Model):
         return f"{self.item.itemname}-{self.item.category.category}"
 
     def image(self):
-        return self.item.image.url
+        if self.item.image:
+            return self.item.image.url
+        else:
+            return None
     
     def restaurant_name(self):
         return self.restaurant.name

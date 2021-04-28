@@ -48,6 +48,9 @@ class Sub_Category(models.Model):
 def location(instance,filename):
     return f"{instance.restaurant.city}/{instance.restaurant.name}/menu/{filename}"
 
+
+
+
 class Menu(models.Model):
     
     restaurant=models.ForeignKey(Restaurant, on_delete=models.CASCADE)
@@ -56,7 +59,7 @@ class Menu(models.Model):
     itemname=models.CharField(max_length=255)
     price=models.PositiveIntegerField()
     description = models.TextField(null=True,blank=True)
-    image = models.ImageField(null=True,blank=True,upload_to=location)
+    image = models.ImageField(upload_to=location, default='default/itemDefault.png')
     rating_average = models.FloatField(default=0)
     review_count = models.IntegerField(default=0)
     available= models.BooleanField(default=True)
