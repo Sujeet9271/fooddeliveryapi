@@ -13,7 +13,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     
-    path('/admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
    
     path('token/refresh/', TokenRefreshView.as_view(),name="token_refresh"),
     path('token/verify/', TokenVerifyView.as_view(),name="token_verify"),
