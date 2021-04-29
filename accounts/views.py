@@ -77,7 +77,7 @@ def customer_register(request):
             else:
                 return Response('Password and Confirm Password doesnot match')
         else:
-            return Response(serializer.error)
+            return Response(serializer.errors)
     else:
         return Response('Welcome')
 
