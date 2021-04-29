@@ -51,8 +51,7 @@ def location(instance,filename):
 
 
 
-class Menu(models.Model):
-    
+class Menu(models.Model):    
     restaurant=models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     category=models.ForeignKey(Category, on_delete=models.CASCADE)
     sub_category=models.ForeignKey(Sub_Category, on_delete=models.CASCADE,related_name='menu')

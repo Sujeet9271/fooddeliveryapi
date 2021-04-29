@@ -13,10 +13,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     
-    path('admin/', admin.site.urls),
-    path('',city.index),
-
-    
+    path('/admin/', admin.site.urls),
+   
     path('token/refresh/', TokenRefreshView.as_view(),name="token_refresh"),
     path('token/verify/', TokenVerifyView.as_view(),name="token_verify"),
     # ---------------------------------------------------------------For Customers-----------------------------------------------------------------------
@@ -91,11 +89,11 @@ urlpatterns = [
     # Detail View of restaurant's menu
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/', menu.detail_menu, name='restaurant_menu'),
 
-     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allitems/', menu.allitems, name='all_items'),
 
-     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allitems/<int:id>/', menu.updateitem, name='update item'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allitems/', menu.allitems, name='all_items'),
 
-     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allsubs/', menu.allsub, name='all_subs'),
+
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/allsubs/', menu.allsub, name='all_subcategory'),
 
     # View or Add Category
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/', menu.category,name='category'),
@@ -104,15 +102,15 @@ urlpatterns = [
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/update/', menu.update_category,name='update category'),
 
     # View or Add Sub_Category
-    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/', menu.subcategory,name='subcategory'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/', menu.subcategory,name='category_subcategory'),
 
     # Update or Delete Sub_Category
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/', menu.update_subcategory,name='update_subcategory'),
     
     # Add new Item in the menu
-    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/items/', menu.add_menu,name='add menu'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/items/', menu.add_item,name='category_subcategory_item_add'),
 
     # Update or Delete Menu Item
-    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/item/<int:item>/', menu.update_item,name='subcategory_item_detail'),
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/menu/category/<int:category>/subcategory/<int:subcategory>/item/<int:item>/', menu.update_item,name='category_subcategory_item_update'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

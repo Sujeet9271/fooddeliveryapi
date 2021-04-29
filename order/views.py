@@ -125,7 +125,7 @@ def place_order(request):
             for order in UserOrder.objects.select_related('customer').filter(customer = request.user.id).exclude(placed=True):
                 item = {
                     'restaurant':order.restaurant.id,
-                    'status':'Pending',
+                    'status':1,
                     'user_order':order.id,
                     'address':address,
                     'contact_number':contact_number
