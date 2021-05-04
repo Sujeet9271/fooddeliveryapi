@@ -35,17 +35,17 @@ def staff_register(request,city,restaurant):
             password2 = request.data['confirm']
             if password == password2:
                 if User.objects.filter(username=username).exists():
-                    return Response('User with same username already exists')
+                    return Response('User with same username already exists',status=status.HTTP_403_FORBIDDEN)
                 elif User.objects.filter(email=email).exists():
-                    return Response('User with same email already exists')
+                    return Response('User with same email already exists',status=status.HTTP_403_FORBIDDEN)
                 else:
                     user = User.objects.create_user(username=username, password=password, firstname=firstname, lastname=lastname, email=email,staff=True,restaurant=restaurant)
                     user.save()
                     return Response('User Registered successfully',status=status.HTTP_201_CREATED)
             else:
-                return Response('Password and Confirm Password doesnot match')
+                return Response('Password and Confirm Password doesnot match',status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     else:
         res=Restaurant.objects.get(id=restaurant)
         return Response(f"Welcome to {res.name}.")
@@ -63,9 +63,9 @@ def customer_register(request):
             password2 = request.data['confirm']        
             if password == password2:
                 if User.objects.filter(username=username).exists():
-                    return Response('User with same username already exists')
+                    return Response('User with same username already exists',status=status.HTTP_403_FORBIDDEN)
                 elif User.objects.filter(email=email).exists():
-                    return Response('User with same email already exists')
+                    return Response('User with same email already exists',status=status.HTTP_403_FORBIDDEN)
                 else:
                     user = User.objects.create_user(username=username, password=password, firstname=firstname, lastname=lastname, email=email,staff=False,restaurant=0)
                     profile = Profile.objects.create(user=user,address='',contact_number='')
@@ -74,9 +74,9 @@ def customer_register(request):
                     return Response('User Registered successfully',status=status.HTTP_201_CREATED)
                 
             else:
-                return Response('Password and Confirm Password doesnot match')
+                return Response('Password and Confirm Password doesnot match',status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response('Welcome')
 
@@ -124,30 +124,6 @@ def BlacklistTokenView(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-# @api_view(['GET'])
-# def _logout(request):
-#     print(request.user)
-#     logout(request)
-#     return Response('logged out')
-
-# # @api_view(['GET','POST'])
-# # def login(request):
-# #     if request.method == 'GET':  
-# #         return Response('WELCOME TO FOOD DELIVERY. Enter your login credentials(email and password)')
-# #     else:    
-# #         email = request.data['email']
-# #         password = request.data['password']
-        
-# #         if User.objects.filter(email=email).exists()==False:
-# #             return Response('User doesnot exists')
-        
-# #         user = authenticate(email=email, password=password)
- 
-# #         if user is not None:
-# #             login(request, user)
-# #             return Response('Logged in')
-# #         else:                       
-# #             return Response('Username or Password is incorrect')
 
 @api_view(['GET','POST'])
 def customer_login(request):
