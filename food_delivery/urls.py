@@ -19,9 +19,9 @@ urlpatterns = [
     path('token/verify/', TokenVerifyView.as_view(),name="token_verify"),
     # ---------------------------------------------------------------For Customers-----------------------------------------------------------------------
     
-    path('accounts/login/', TokenObtainPairView.as_view(), name='login'),
+    path('accounts/login/', accounts.customer_login, name='login'),
     path('accounts/register/', accounts.customer_register, name = 'customer'),
-    path('accounts/logout/', accounts.BlacklistTokenView.as_view(), name='logout'),
+    path('accounts/logout/', accounts.BlacklistTokenView, name='logout'),
     path('accounts/profile/',accounts.profile),
 
     #  Detail of Available Restaurants with their detail menu with category and sub category from the selected City
@@ -73,7 +73,7 @@ urlpatterns = [
     
     # -------------------------------------------------------------For Restaurants-----------------------------------------------------------------------
    
-    path('cities/<int:city>/restaurant/<int:restaurant>/staff/login/', TokenObtainPairView.as_view(), name='staff login'),    
+    path('cities/<int:city>/restaurant/<int:restaurant>/staff/login/', accounts.staff_login, name='staff login'),    
     path('cities/<int:city>/restaurant/<int:restaurant>/staff/register/', accounts.staff_register, name="staff register"),
     # for  viewing and updating orders from staff end 
 
